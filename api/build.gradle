@@ -1,0 +1,19 @@
+plugins {
+    id 'java'
+}
+
+group 'dev.youika.api'
+version '0.1'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+
+    implementation 'com.zaxxer:HikariCP:5.0.1'
+    runtimeOnly 'mysql:mysql-connector-java:8.0.29'
+
+    compileOnly fileTree(dir: "libs", includes: ['*.jar'])
+
+}
