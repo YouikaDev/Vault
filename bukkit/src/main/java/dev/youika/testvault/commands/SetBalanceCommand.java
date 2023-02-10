@@ -1,6 +1,7 @@
 package dev.youika.testvault.commands;
 
 import dev.youika.testvault.economy.EconomyProvider;
+import dev.youika.vault.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -9,9 +10,9 @@ import org.bukkit.entity.Player;
 
 public class SetBalanceCommand implements CommandExecutor {
 
-    private final EconomyProvider provider;
+    private final Economy provider;
 
-    public SetBalanceCommand(EconomyProvider provider) {
+    public SetBalanceCommand(Economy provider) {
         this.provider = provider;
     }
 

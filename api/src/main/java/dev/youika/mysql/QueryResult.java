@@ -4,6 +4,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -29,7 +30,7 @@ public class QueryResult implements AutoCloseable{
         }
     }
 
-    public Collection<SQLSection> all() {
+    public List<SQLSection> all() {
         return sectinosMap.values();
     }
 

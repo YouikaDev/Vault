@@ -21,7 +21,7 @@ public class ConnectionListener implements Listener {
 
     @EventHandler
     public void onLeave(PlayerQuitEvent event) {
-        repository.removeUserInMap(event.getPlayer());
+        repository.savePlayerInDatabaseFromRemoveInMap(event.getPlayer(), true);
     }
 
 }

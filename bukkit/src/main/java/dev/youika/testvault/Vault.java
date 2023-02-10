@@ -16,11 +16,11 @@ public class Vault extends JavaPlugin {
 
     private MySQL mySQL;
     private UserRepository repository;
-    private EconomyProvider provider;
 
     @Override
     public void onDisable() {
         mySQL.shutdown();
+        repository.shutdown();
         super.onDisable();
     }
 
@@ -41,10 +41,10 @@ public class Vault extends JavaPlugin {
         factory.unsafeUpdate("create table if not exists `Players` (`uuid` varchar(36) primary key, `balance` long);");
 
         repository = new UserRepository(factory);
-        provider = new EconomyProvider(factory, repository);
 
         Bukkit.getPluginManager().registerEvents(new ConnectionListener(repository), this);
 
+        EconomyProvider provider = new EconomyProvider(mySQL, repository);
         getCommand("balance").setExecutor(new BalanceCommand(provider));
         getCommand("pay").setExecutor(new PayCommand(provider));
         getCommand("setbalance").setExecutor(new SetBalanceCommand(provider));

@@ -3,6 +3,8 @@ package dev.youika.testvault.user;
 import com.google.common.util.concurrent.AtomicDouble;
 import dev.youika.vault.User;
 
+import java.util.concurrent.CompletableFuture;
+
 public class UserImpl implements User {
 
     private final AtomicDouble atomicBalance;
@@ -37,5 +39,15 @@ public class UserImpl implements User {
         double update = prev + sum;
 
         return atomicBalance.compareAndSet(prev, update);
+    }
+
+    @Override
+    public CompletableFuture<Boolean> withdrawCompletable(double sum) {
+        return CompletableFuture.completedFuture(withdraw(sum));
+    }
+
+    @Override
+    public CompletableFuture<Boolean> depositCompletable(double sum) {
+        return CompletableFuture.completedFuture(deposit(sum));
     }
 }

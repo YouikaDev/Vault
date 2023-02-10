@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class UserRepository {
@@ -22,12 +23,26 @@ public class UserRepository {
         Bukkit.getOnlinePlayers().forEach(this::asyncLoadUserOrNew);
     }
 
+    public void shutdown() {
+        CompletableFuture.runAsync(() ->
+                users.keySet().forEach(player -> savePlayerInDatabaseFromRemoveInMap(player, true)));
+    }
+
     public User unsafeUser(Player player) {
         return users.get(player);
     }
 
-    public void removeUserInMap(Player player) {
-        users.remove(player);
+    public void savePlayerInDatabaseFromRemoveInMap(Player player, boolean remove) {
+        factory.prepareUpdate("replace into `Players` values (?,?)", ps -> {
+            try {
+                ps.setString(1, player.getUniqueId().toString());
+                ps.setDouble(2, unsafeUser(player).getBalance());
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }).thenAcceptAsync(result -> {
+           if (remove && result > 0) users.remove(player);
+        });
     }
 
     public void asyncLoadUserOrNew(Player player) {
@@ -41,17 +56,9 @@ public class UserRepository {
         }).thenAcceptAsync(result -> {
             User user = new UserImpl(0D);
             if (result.isEmpty()) {
-                factory.prepareUpdate("replace into `Players` values (?,?)", ps -> {
-                    try {
-                        ps.setString(1, uuid.toString());
-                        ps.setDouble(2, 0);
-                    } catch (SQLException e) {
-                        throw new RuntimeException(e);
-                    }
-                });
+                savePlayerInDatabaseFromRemoveInMap(player, false);
             } else {
-                // Убил 2 часа чтоб выглядело красиво, а в итоге это оказался рабочий вариант... *тильт*
-                user = new UserImpl(result.all().stream().map(section -> Double.parseDouble(section.getValue("balance"))).findFirst().orElse(0D));
+                user = new UserImpl(Double.parseDouble(result.all().get(0).getValue("balance")));
             }
             users.put(player, user);
         });
