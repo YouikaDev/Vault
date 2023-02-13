@@ -1,6 +1,6 @@
 package dev.youika.vault;
 
-import java.util.UUID;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public interface User {
@@ -19,24 +19,24 @@ public interface User {
      * @param sum сумма которую нужно забрать
      * @return вернёт баланс игрока после проведения операции
      */
-    boolean withdraw(double sum);
+    Optional<Double> withdraw(double sum);
 
     /**
      * @param sum сумма которую будем добавляться
      * @return вернёт баланс игрока после проведения операции
      */
-    boolean deposit(double sum);
+    Optional<Double> deposit(double sum);
 
     /**
      * @param sum сумма которую нужно забрать
      * @return вернёт true если успешно
      */
-    CompletableFuture<Boolean> withdrawCompletable(double sum);
+    CompletableFuture<Optional<Double>> withdrawCompletable(double sum);
 
     /**
      * @param sum сумма которую будем добавляться
      * @return вернёт true если успешно
      */
-    CompletableFuture<Boolean> depositCompletable(double sum);
+    CompletableFuture<Optional<Double>> depositCompletable(double sum);
 
 }

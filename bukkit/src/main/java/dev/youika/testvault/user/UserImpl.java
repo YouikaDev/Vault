@@ -3,6 +3,7 @@ package dev.youika.testvault.user;
 import com.google.common.util.concurrent.AtomicDouble;
 import dev.youika.vault.User;
 
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public class UserImpl implements User {
@@ -25,29 +26,29 @@ public class UserImpl implements User {
     }
 
     @Override
-    public boolean withdraw(double sum) {
+    public Optional<Double> withdraw(double sum) {
         double prev = getBalance();
         double update = prev - sum;
 
-        return atomicBalance.compareAndSet(prev, update);
+        return atomicBalance.compareAndSet(prev, update) ? Optional.of(update) : Optional.empty();
     }
 
     @Override
-    public boolean deposit(double sum) {
+    public Optional<Double> deposit(double sum) {
 
         double prev = getBalance();
         double update = prev + sum;
 
-        return atomicBalance.compareAndSet(prev, update);
+        return atomicBalance.compareAndSet(prev, update) ? Optional.of(update) : Optional.empty();
     }
 
     @Override
-    public CompletableFuture<Boolean> withdrawCompletable(double sum) {
+    public CompletableFuture<Optional<Double>> withdrawCompletable(double sum) {
         return CompletableFuture.completedFuture(withdraw(sum));
     }
 
     @Override
-    public CompletableFuture<Boolean> depositCompletable(double sum) {
+    public CompletableFuture<Optional<Double>> depositCompletable(double sum) {
         return CompletableFuture.completedFuture(deposit(sum));
     }
 }

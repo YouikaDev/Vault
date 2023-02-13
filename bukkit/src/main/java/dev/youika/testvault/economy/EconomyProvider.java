@@ -9,6 +9,7 @@ import dev.youika.vault.User;
 import org.bukkit.entity.Player;
 
 import java.sql.SQLException;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public class EconomyProvider implements Economy {
@@ -30,12 +31,12 @@ public class EconomyProvider implements Economy {
 
     @Override
     public CompletableFuture<Boolean> withdrawAsync(Player player, double sum) {
-        return user.withdrawCompletable(sum).thenApplyAsync(hasComplete -> {
-            if (hasComplete) {
+        return getUser(player).withdrawCompletable(sum).thenApplyAsync(complete -> {
+            if (complete.isPresent()) {
 
                 int result = syncFactory.prepareUpdate("update `Players` set `balance` = ? where `uuid` = ?", ps -> {
                     try {
-                        ps.setDouble(1, getUser(player).getBalance());
+                        ps.setDouble(1, complete.get());
                         ps.setString(2, player.getUniqueId().toString());
                     } catch (SQLException e) {
                         throw new RuntimeException(e);
@@ -52,12 +53,14 @@ public class EconomyProvider implements Economy {
 
     @Override
     public CompletableFuture<Boolean> depositAsync(Player player, double sum) {
-        return user.depositCompletable(sum).thenApplyAsync(hasComplete -> {
-            if (hasComplete) {
+        User user = getUser(player);
+
+        return user.depositCompletable(sum).thenApplyAsync(complete -> {
+            if (complete.isPresent()) {
 
                 int result = syncFactory.prepareUpdate("update `Players` set `balance` = ? where `uuid` = ?", ps -> {
                     try {
-                        ps.setDouble(1, getUser(player).getBalance());
+                        ps.setDouble(1, complete.get());
                         ps.setString(2, player.getUniqueId().toString());
                     } catch (SQLException e) {
                         throw new RuntimeException(e);
@@ -75,11 +78,12 @@ public class EconomyProvider implements Economy {
     @Override
     public double withdraw(Player player, double sum) {
         User user = getUser(player);
+        Optional<Double> withdraw = user.withdraw(sum);
 
-        if (user.withdraw(sum)) {
+        if (withdraw.isPresent()) {
             factory.prepareUpdate("update `Players` set `balance` = ? where `uuid` = ?", ps -> {
                 try {
-                    ps.setDouble(1, getUser(player).getBalance());
+                    ps.setDouble(1, withdraw.get());
                     ps.setString(2, player.getUniqueId().toString());
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
@@ -100,11 +104,12 @@ public class EconomyProvider implements Economy {
     @Override
     public double deposit(Player player, double sum) {
         User user = getUser(player);
+        Optional<Double> withdraw = user.withdraw(sum);
 
-        if (user.deposit(sum)) {
+        if (withdraw.isPresent()) {
             factory.prepareUpdate("update `Players` set `balance` = ? where `uuid` = ?", ps -> {
                 try {
-                    ps.setDouble(1, getUser(player).getBalance());
+                    ps.setDouble(1, withdraw.get());
                     ps.setString(2, player.getUniqueId().toString());
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
@@ -127,10 +132,11 @@ public class EconomyProvider implements Economy {
         User user = getUser(player);
 
         double before = user.getBalance();
+        double balance = user.setBalance(sum);
 
         factory.prepareUpdate("update `Players` set `balance` = ? where `uuid` = ?", ps -> {
             try {
-                ps.setDouble(1, user.setBalance(sum));
+                ps.setDouble(1, balance);
                 ps.setString(2, player.getUniqueId().toString());
             } catch (SQLException e) {
                 throw new RuntimeException(e);
