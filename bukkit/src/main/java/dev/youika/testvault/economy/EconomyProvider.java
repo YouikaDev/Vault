@@ -79,7 +79,7 @@ public class EconomyProvider implements Economy {
         if (user.withdraw(sum)) {
             factory.prepareUpdate("update `Players` set `balance` = ? where `uuid` = ?", ps -> {
                 try {
-                    ps.setDouble(1, user.getBalance());
+                    ps.setDouble(1, getUser(player).getBalance());
                     ps.setString(2, player.getUniqueId().toString());
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
@@ -104,7 +104,7 @@ public class EconomyProvider implements Economy {
         if (user.deposit(sum)) {
             factory.prepareUpdate("update `Players` set `balance` = ? where `uuid` = ?", ps -> {
                 try {
-                    ps.setDouble(1, user.getBalance());
+                    ps.setDouble(1, getUser(player).getBalance());
                     ps.setString(2, player.getUniqueId().toString());
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
@@ -127,11 +127,10 @@ public class EconomyProvider implements Economy {
         User user = getUser(player);
 
         double before = user.getBalance();
-        double balance = user.setBalance(sum);
 
         factory.prepareUpdate("update `Players` set `balance` = ? where `uuid` = ?", ps -> {
             try {
-                ps.setDouble(1, balance);
+                ps.setDouble(1, user.setBalance(sum));
                 ps.setString(2, player.getUniqueId().toString());
             } catch (SQLException e) {
                 throw new RuntimeException(e);
