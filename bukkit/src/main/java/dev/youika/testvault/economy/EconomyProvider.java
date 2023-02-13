@@ -30,14 +30,12 @@ public class EconomyProvider implements Economy {
 
     @Override
     public CompletableFuture<Boolean> withdrawAsync(Player player, double sum) {
-        User user = getUser(player);
-
         return user.withdrawCompletable(sum).thenApplyAsync(hasComplete -> {
             if (hasComplete) {
 
                 int result = syncFactory.prepareUpdate("update `Players` set `balance` = ? where `uuid` = ?", ps -> {
                     try {
-                        ps.setDouble(1, user.getBalance());
+                        ps.setDouble(1, getUser(player).getBalance());
                         ps.setString(2, player.getUniqueId().toString());
                     } catch (SQLException e) {
                         throw new RuntimeException(e);
@@ -54,14 +52,12 @@ public class EconomyProvider implements Economy {
 
     @Override
     public CompletableFuture<Boolean> depositAsync(Player player, double sum) {
-        User user = getUser(player);
-
         return user.depositCompletable(sum).thenApplyAsync(hasComplete -> {
             if (hasComplete) {
 
                 int result = syncFactory.prepareUpdate("update `Players` set `balance` = ? where `uuid` = ?", ps -> {
                     try {
-                        ps.setDouble(1, user.getBalance());
+                        ps.setDouble(1, getUser(player).getBalance());
                         ps.setString(2, player.getUniqueId().toString());
                     } catch (SQLException e) {
                         throw new RuntimeException(e);
